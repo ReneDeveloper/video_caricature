@@ -9,83 +9,92 @@ from class_config import Config
 cfg = Config()
 
 class CaricatureFrame():
-	"""Procesa video"""
-	def __init__(self,file__):
-		"""Inicializa"""
-		self.file_ = file__
-		self._log(f"Loading in : {cfg.get_par('src_dir')}")
-		self._log(f"Transform to caricature : {file__}")
-		self.procesa_frame()
+    """Procesa video"""
+    def __init__(self,src__,file__,car__):
+        """Inicializa"""
+        self.src__ = src__
+        self.file_ = file__
+        self.car__ = car__
 
-	def _log(self,var):
-		"""function _log"""
-		print(f"CaricatureFrame:{var}")
+        if self.src__==None:
+            self.src__ = cfg.get_par('src_dir')
 
-	def procesa_frame(self):
-		"""function """
-		out_ = "ok"
-		# imports
+        if self.car__==None:
+            self.car__ = self.src__
 
-		# pasar del filtro bilateral
-		BI_LATERAL_FILTER_STEPS = 2#40 works
+        self._log(f"Loading in : {self.src__}")
 
-		# pasar downsampling y upsampling
-		DOWNSAMPLING_UPSAMPLING_STEPS = 2
+        self._log(f"Transform to caricature : {file__}")
+        self.procesa_frame()
 
-		# ruta de la imagen.
-		#ruta = "C:/Users/rsilc/Downloads/opencv-cartoon/"
-		ruta     = cfg.get_par('src_dir')
-		ruta_out = cfg.get_par('out_dir')
-		#C:/RSILVA_BASIC_BOTS/TEST_IMAGENES_caticatura
+    def _log(self,var):
+        """function _log"""
+        print(f"CaricatureFrame:{var}")
 
-		#foto = f"{ruta}woman2.jpeg"
-		foto = f"{ruta}{self.file_}"
-		print(f"Abrir la foto:{foto}")
-		image = pyl.imread(foto)
+    def procesa_frame(self):
+        """function """
+        out_ = "ok"
+        # imports
 
-		# ancho y alto.
-		width, height = image.shape[:2]
+        # pasar del filtro bilateral
+        BI_LATERAL_FILTER_STEPS = 2#40 works
 
-		# modificando la copia.
-		copia = np.copy(image)
+        # pasar downsampling y upsampling
+        DOWNSAMPLING_UPSAMPLING_STEPS = 2
 
-		# Primero, reducimos tamanio para operaciones mas rapidas.
-		for _ in range(DOWNSAMPLING_UPSAMPLING_STEPS):
-		    copia = cv2.pyrDown(copia)
+        # ruta de la imagen.
+        foto = f"{self.src__}{self.file_}"
+        self._log(f"Abrir la foto:{foto}")
+        image = pyl.imread(foto)
 
-		# filtro bi lateral : difuminando detalles de  imagen -->BI_LATERAL_FILTER_STEPS
+        # ancho y alto.
+        width, height = image.shape[:2]
 
-		for _ in range(BI_LATERAL_FILTER_STEPS):
-		    copia = cv2.bilateralFilter(copia, d=9, sigmaColor=.1, sigmaSpace=.01)
+        # modificando la copia.
+        copia = np.copy(image)
 
-		# Restauramos la imagen a su tamanio original.
-		for _ in range(DOWNSAMPLING_UPSAMPLING_STEPS):
-		    copia = cv2.pyrUp(copia)
+        # Primero, reducimos tamanio para operaciones mas rapidas.
+        for _ in range(DOWNSAMPLING_UPSAMPLING_STEPS):
+            copia = cv2.pyrDown(copia)
 
-		# Convertimos la imagen original en escala de grises, y la difuminamos.
-		gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-		blur = cv2.medianBlur(gray, 7)
+        # filtro bi lateral : difuminando detalles de  imagen -->BI_LATERAL_FILTER_STEPS
 
-		# Detectamos y realzamos los bordes de la imagen.
-		edges = cv2.adaptiveThreshold((255 * blur).astype(np.uint8), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,
-		                              blockSize=9, C=2)
-		edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
+        for _ in range(BI_LATERAL_FILTER_STEPS):
+            copia = cv2.bilateralFilter(copia, d=9, sigmaColor=.1, sigmaSpace=.01)
 
-		# La imagen caricaturizada sera la combinacion de la imagen difuminada con los bordes realzados en el paso anterior.
-		cartoonized_image = cv2.bitwise_and(copia, edges)
+        # Restauramos la imagen a su tamanio original.
+        for _ in range(DOWNSAMPLING_UPSAMPLING_STEPS):
+            copia = cv2.pyrUp(copia)
 
-		# Dibujamos la imagen original junto con su caricatura.
-		fig = pyl.figure(figsize=(20, 10))
-		fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=.05, wspace=.05)
+        # Convertimos la imagen original en escala de grises, y la difuminamos.
+        gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        blur = cv2.medianBlur(gray, 7)
 
-		for i, title, img in zip(range(1, 3), ['Original', 'Caricatura'], [image, cartoonized_image]):
-		    pyl.subplot(120 + i)
-		    pyl.imshow(img)
-		    pyl.axis('off')
-		    pyl.title(title, size=20)
+        # Detectamos y realzamos los bordes de la imagen.
+        edges = cv2.adaptiveThreshold((255 * blur).astype(np.uint8), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,
+                                        blockSize=9, C=2)
+        edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
 
-		#pyl.show()
-		# Guardamos la imagen
-		cv2.imwrite(f"{ruta_out}__caricature__{self.file_}", cartoonized_image)
+        # La imagen caricaturizada sera la combinacion de la imagen difuminada con los bordes realzados en el paso anterior.
+        cartoonized_image = cv2.bitwise_and(copia, edges)
 
-		return out_
+        # Dibujamos la imagen original junto con su caricatura.
+        fig = pyl.figure(figsize=(20, 10))
+        fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=.05, wspace=.05)
+
+        for i, title, img in zip(range(1, 3), ['Original', 'Caricatura'], [image, cartoonized_image]):
+            pyl.subplot(120 + i)
+            pyl.imshow(img)
+            pyl.axis('off')
+            pyl.title(title, size=20)
+
+        #pyl.show()
+        # Guardamos la imagen
+        generar_frame = cfg.get_par('generar_frame')
+        if generar_frame:
+            #ruta_car = cfg.get_par('car_dir')
+            name_car = f"__caricature__{self.file_}"
+            cv2.imwrite(f'{self.car__}{name_car}', cartoonized_image)
+            self._log(f"guardar la cartoonized_image:{self.car__}{name_car}")
+
+        return out_

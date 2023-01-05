@@ -15,5 +15,11 @@ class Config:
         pars_[par__]=val__
 
 #parametros de paths
+
 pars_["src_dir"]="C:/RSILVA_BASIC_BOTS/TEST_IMAGENES_caticatura/"
 pars_["out_dir"]="C:/RSILVA_BASIC_BOTS/TEST_IMAGENES_caticatura/out/"
+pars_["car_dir"]="C:/RSILVA_BASIC_BOTS/TEST_IMAGENES_caticatura/car/"
+
+#parametros de debug
+pars_['debug_mode' ]=True#yes/no
+pars_['generar_frame']=True#
